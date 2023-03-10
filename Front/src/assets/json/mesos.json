@@ -1,0 +1,14 @@
+[
+    { "name": "Gener", "code": "GR" },
+    { "name": "Febrer", "code": "FB" },
+    { "name": "Març", "code": "MR" },
+    { "name": "Abril", "code": "AB" },
+    { "name": "Maig", "code": "MG" },
+    { "name": "Juny", "code": "JN" },
+    { "name": "Juliol", "code": "JL" },
+    { "name": "Agost", "code": "AG" },
+    { "name": "Septembre", "code": "SP" },
+    { "name": "Octubre", "code": "OT" },
+    { "name": "Novembre", "code": "NV" },
+    { "name": "Desembre", "code": "DB" }
+]

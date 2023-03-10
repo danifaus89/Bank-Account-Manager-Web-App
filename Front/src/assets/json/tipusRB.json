@@ -1,0 +1,11 @@
+ [{
+     "id": 1,
+     "name": "tipus",
+     "value": "pagament",
+     "label": "Pagament"
+ }, {
+     "id": 2,
+     "name": "tipus",
+     "value": "cobrament",
+     "label": "Cobrament"
+ }]

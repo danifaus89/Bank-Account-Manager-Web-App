@@ -1,0 +1,276 @@
+<p-toast></p-toast>
+
+<div class="card">
+    <p-toolbar styleClass="p-mb-4 shadow">
+        <ng-template pTemplate="left">
+            <div class="row">
+                <div class="col-5"> <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+                </div>
+                <div class="col-4"> <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedMoves()" [disabled]="!selectedMoves || selectedMoves.length < 2 "></button>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="right">
+            <div class="row">
+                <div class="col-4">
+                    <button class="p-button-help" pButton pRipple icon="pi pi-upload"></button>
+                </div>
+                <div class="col-4">
+                    <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPdf()" class="p-button-warning p-mr-2" pTooltip="PDF" tooltipPosition="bottom"></button> </div>
+            </div>
+        </ng-template>
+    </p-toolbar>
+
+    <div class="container-fluid p-5 bg">
+        <div class="shadow-lg">
+            <p-table id="htmlData" #dt #htmlData [value]="moviments" [rows]="10" sortField="date" [sortOrder]="-1" [paginator]="true" [globalFilterFields]="['concepte','date','import','descripcio', 'tipus']" [(selection)]="selectedMoves" [rowHover]="true" dataKey="_id"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [showCurrentPageReport]="false">
+                <ng-template pTemplate="caption">
+                    <div class="row">
+                        <div class="col-3">
+                            <h5 class="p-3">Llistat de moviments</h5>
+                        </div>
+                        <div class="col-9">
+                            <div class="row justify-content-end">
+                                <div class="col-1">
+                                    <div class="mt-2 ">
+                                        <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success p-0 text-right" (click)="openSaldo()"></button>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <h5 class="p-3">Saldo:</h5>
+                                </div>
+                                <div class="col-3">
+                                    <h2 class="p-2 strong">{{saldo}}€</h2>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-4 px-0">
+                            <label class="p-3" for="monthpicker">Data</label>
+                            <p-calendar [(ngModel)]="pickerMes" #month view="month" dateFormat="MM" [readonlyInput]="true" inputId="monthpicker" (click)="monthPicker()" (click)="getMovesOfMonth()"></p-calendar>
+                            <button pButton pRipple icon="pi pi-refresh" class="p-button-success m-2 " (click)="getActualDate()"></button>
+                        </div>
+                        <div class="col-4">
+                        </div>
+                        <div class="col-4 text-end">
+                            <label class="p-3"></label>
+                            <span class="p-input-icon-left ">
+                              <i class="pi pi-search" ></i>
+                              <input pInputText type="text" class="" (input)="dt.filterGlobal($event.target, 'contains')" placeholder="Buscar..." />
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="concepte">Concepte
+                            <p-sortIcon field="concepte"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="date">Data
+                            <p-sortIcon field="date"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="import">Import
+                            <p-sortIcon field="import"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="descripcio">Descripció
+                            <p-sortIcon field="descripcio"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="tipus">Tipus
+                            <p-sortIcon field="tipus"></p-sortIcon>
+                        </th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-move>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="move"></p-tableCheckbox>
+                        </td>
+                        <td>{{move.concepte}}</td>
+                        <td>{{move.date}}</td>
+                        <td *ngIf="move.tipus === 'pagament'" class=" text-danger">-{{move.import.$numberDecimal}}€</td>
+                        <td *ngIf="move.tipus === 'cobrament'" class="text-success">+{{move.import.$numberDecimal}}€</td>
+                        <td>{{move.descripcio}}</td>
+                        <td>{{move.tipus}}</td>
+                        <td>
+                            <div class="row">
+                                <div class="col-4">
+                                    <!-- <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success p-0" (click)="openEditDialog(move)"></button> -->
+                                </div>
+                                <div class="col-4"> <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning p-0" (click)="deleteMove(move)"></button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <div class="p-d-flex p-ai-center p-jc-between">
+                        En total hi han {{moviments ? moviments.length : 0 }} moviments.
+                    </div>
+                </ng-template>
+            </p-table>
+        </div>
+
+    </div>
+</div>
+
+<p-dialog [(visible)]="saldoDialog" [style]="{width: '300px'}" header="Afegir Saldo Inicial" [modal]="true" styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <form [formGroup]="formSaldo" (ngSubmit)="setSaldo()">
+            <div class="row">
+                <div class="col-12 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="saldo">Saldo inicial: </span>
+                        <input type="number" class="form-control" formControlName="saldo">
+                    </div>
+                    <div *ngIf="f.saldo.touched && f.saldo.invalid" class="alert alert-danger">
+                        <div *ngIf="f.saldo.errors.required">El saldo no pot estar buit</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <button class="btn btn-success mb-1" type="submit" [disabled]="formSaldo.status !== 'VALID'">Acceptar</button>
+                <button class=" btn btn-danger mt-1 " type="button " (click)="closeSaldoDialog() ">Cancel·lar</button>
+            </div>
+        </form>
+    </ng-template>
+</p-dialog>
+<p-dialog [(visible)]="newDialog" [style]="{width: '600px'}" header="Nou Moviment" [modal]="true" styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <form [formGroup]="form" (ngSubmit)="createMove()">
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="concepte">Concepte</span>
+                        <input type="text" class="form-control" formControlName="concepte">
+                    </div>
+                    <div *ngIf="f.concepte.touched && f.concepte.invalid" class="alert alert-danger">
+                        <div *ngIf="f.concepte.errors.required">El concepte no pot estar buit</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-5 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="import">Import</span>
+                        <input type="number" class="form-control" formControlName="import">
+                        <span class="input-group-text">€</span>
+                    </div>
+                    <div *ngIf="f.import.touched && f.import.invalid" class="alert alert-danger">
+                        <div *ngIf="f.import.errors.required">L'import no pot estar buit</div>
+                    </div>
+                </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" type="radio" id="pagament" value="pagament" name="tipus" formControlName="tipus" checked>
+                    <span>Pagament</span>
+                </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" type="radio" id="cobrament" value="cobrament" name="tipus" formControlName="tipus">
+                    <span>Cobrament</span>
+                </div>
+                <div *ngIf="f.tipus.touched && f.tipus.invalid" class="alert alert-danger">
+                    <div *ngIf="f.tipus.errors.required">Has de sel·leccionar un tipus de pagament</div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="date">Data</span>
+                        <input type="date" class="form-control" formControlName="date">
+                    </div>
+                    <div *ngIf="f.date.touched && f.date.invalid" class="alert alert-danger">
+                        <div *ngIf="f.date.errors.required">Has de triar una data</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group">
+                        <span class="input-group-text">Descripció</span>
+                        <textarea class="form-control" formControlName="descripcio" aria-label="With textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <button class="btn btn-success mb-1" type="submit" [disabled]="form.status !== 'VALID'">Acceptar</button>
+                <button class=" btn btn-danger mt-1 " type="button " (click)="closeCreateDialog() ">Cancel·lar</button>
+            </div>
+        </form>
+    </ng-template>
+
+</p-dialog>
+<p-dialog [(visible)]="editDialog" [style]="{width: '600px'}" header="Modificar Moviment" [modal]="true" styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <form [formGroup]="form" (ngSubmit)="editMove(form.value)">
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="concepte">Concepte</span>
+                        <input type="text" class="form-control" formControlName="concepte">
+                    </div>
+                    <div *ngIf="f.concepte.touched && f.concepte.invalid" class="alert alert-danger">
+                        <div *ngIf="f.concepte.errors.required">El concepte no pot estar buit</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-5 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="import">Import</span>
+                        <input type="number" class="form-control" formControlName="import">
+                        <span class="input-group-text">€</span>
+                    </div>
+                    <div *ngIf="f.import.touched && f.import.invalid" class="alert alert-danger">
+                        <div *ngIf="f.import.errors.required">L'import no pot estar buit</div>
+                    </div>
+                </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" type="radio" id="pagament" value="pagament" name="tipus" formControlName="tipus" checked>
+                    <span>Pagament</span>
+                </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" type="radio" id="cobrament" value="cobrament" name="tipus" formControlName="tipus">
+                    <span>Cobrament</span>
+                </div>
+                <div *ngIf="f.tipus.touched && f.tipus.invalid" class="alert alert-danger">
+                    <div *ngIf="f.tipus.errors.required">Has de sel·leccionar un tipus de pagament</div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" for="date">Data</span>
+                        <input type="date" class="form-control" formControlName="date">
+                    </div>
+                    <div *ngIf="f.date.touched && f.date.invalid" class="alert alert-danger">
+                        <div *ngIf="f.date.errors.required">Has de triar una data</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-11 form-group">
+                    <div class="input-group">
+                        <span class="input-group-text">Descripció</span>
+                        <textarea class="form-control" formControlName="descripcio" aria-label="With textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <button class="btn btn-success mb-1" type="submit" [disabled]="form.status !== 'VALID'" (click)="getAllMoves()">Acceptar</button>
+                <button class=" btn btn-danger mt-1 " type="button " (click)="closeCreateDialog() ">Cancel·lar</button>
+            </div>
+        </form>
+    </ng-template>
+
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'} "></p-confirmDialog>

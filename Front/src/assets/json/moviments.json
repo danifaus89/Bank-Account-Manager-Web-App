@@ -1,0 +1,34 @@
+[{
+        "id": 1,
+        "numero": 1,
+        "concepte": "moviment numero 1",
+        "import": 35,
+        "dia": "23",
+        "mes": "Juny",
+        "any": "2020",
+        "descripcio": "compres online",
+        "tipus": "pagament"
+    },
+    {
+        "id": 2,
+        "numero": 2,
+        "concepte": "moviment numero 2",
+        "import": 15,
+        "dia": "15",
+        "mes": "Abril",
+        "any": "2020",
+        "descripcio": "aliments",
+        "tipus": "pagament"
+    },
+    {
+        "id": 3,
+        "numero": 3,
+        "concepte": "moviment numero 3",
+        "import": 250,
+        "dia": "10",
+        "mes": "Febrer",
+        "any": "2019",
+        "descripcio": "taller moto",
+        "tipus": "pagament"
+    }
+]
